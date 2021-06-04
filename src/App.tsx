@@ -2,7 +2,10 @@ import React from 'react';
 import Home from './components/Home';
 import Contact from './components/Contact';
 import { Context, users } from './utils';
-import { BrowserRouter as Router, Route } from 'react-router-dom';
+import withRole from './withRole';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+
+const NotFound = () => <h1>404 Not Found </h1>
 
 function ToggleUser() {
   return (
@@ -26,6 +29,11 @@ function ToggleUser() {
   )
 }
 
+// DENYING ROUTES
+const withITRole = withRole(['IT'])
+const ITContactRoute = withITRole(() => <Route path='/contact' exact component={ Contact } />, NotFound)
+
+// MAIN application
 function App() {
   const [user, setUser] = React.useState<string>('basicUser')
 
@@ -38,8 +46,11 @@ function App() {
     >
     <ToggleUser />
     <Router>
-      <Route path='/' exact component={ Home } />
-      <Route path='/contact' exact component={ Contact } />
+      <Switch>
+        <Route path='/' exact component={ Home } />
+        <ITContactRoute />
+        <Route path='*' component={ NotFound } />
+      </Switch>
     </Router>
     </Context.Provider>
   );

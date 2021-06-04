@@ -12,7 +12,7 @@ export const Context = React.createContext<AppContext>(undefined!);
 export const users = {
     basicUser: {
         username: 'John',
-        roles: [],
+        roles: [] as Array<string>,
     },
     intermediate: {
         username: 'Jack',
