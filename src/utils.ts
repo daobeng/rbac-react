@@ -14,7 +14,11 @@ export const users = {
         username: 'John',
         roles: [] as Array<string>,
     },
-    intermediate: {
+    ITUser: {
+        username: 'John',
+        roles: ['IT'],
+    },
+    ITAndMarketing: {
         username: 'Jack',
         roles: ['marketing', 'IT'],
     },
