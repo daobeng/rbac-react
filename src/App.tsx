@@ -2,38 +2,43 @@ import React from 'react';
 import Home from './components/Home';
 import Contact from './components/Contact';
 import { Context, users } from './utils';
+import { AbilityContext } from './components/Can';
+import defineRolesFor, { buildAbilityFor} from './config';
 import withRole from './withRole';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
 const NotFound = () => <h1>404 Not Found </h1>
 
 function ToggleUser() {
-  return (
-    <Context.Consumer>
-      {
-        context => {
-          const updateUser = (e: React.ChangeEvent<HTMLSelectElement>) => context.updateUser(e.target.value)
+  const context = React.useContext(Context);
+  const abilityContext = React.useContext(AbilityContext);
 
-          return (
-            <select value={ context.state.user } onChange={ updateUser }>
-              {
-                Object.keys(users).map(u => (
-                  <option key={ u }>{ u }</option>
-                ))
-              }
-            </select>
-          )
-        }
+  const updateUser = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    context.updateUser(e.target.value)
+
+    // update user roles when user changes / updates
+    const roles = users[e.target.value as keyof typeof users].roles || []
+    abilityContext.update(defineRolesFor(roles))
+  }
+
+  return (
+    <select value={ context.state.user } onChange={ updateUser }>
+      {
+        Object.keys(users).map(u => (
+          <option key={ u }>{ u }</option>
+        ))
       }
-    </Context.Consumer>
+    </select>
   )
 }
 
 // DENYING ROUTES
-const withITRole = withRole(['IT'])
-const ITContactRoute = withITRole(() => <Route path='/contact' exact component={ Contact } />, NotFound)
+// const withITRole = withRole(['IT'])
+// const ITContactRoute = withITRole(() => <Route path='/contact' exact component={ Contact } />, NotFound)
 
 // MAIN application
+const ability = buildAbilityFor([]); // begin with empty abilities
+
 function App() {
   const [user, setUser] = React.useState<string>('basicUser')
 
@@ -44,14 +49,16 @@ function App() {
         updateUser: (a) => setUser(a)
       }}
     >
+    <AbilityContext.Provider value={ ability }>
     <ToggleUser />
     <Router>
       <Switch>
         <Route path='/' exact component={ Home } />
-        <ITContactRoute />
+        {/* <ITContactRoute /> */}
         <Route path='*' component={ NotFound } />
       </Switch>
     </Router>
+    </AbilityContext.Provider>
     </Context.Provider>
   );
 }
