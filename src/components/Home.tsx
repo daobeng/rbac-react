@@ -43,7 +43,7 @@ const Home = () => {
             <Can I='read' this={ subject('Proposal', proposal) }>
                 <h1>Proposal Details</h1>
                 <p>name: { proposal.name }</p>
-                <p></p>
+                <p>owner: { proposal.user }</p>
             </Can>
         </>
     )
