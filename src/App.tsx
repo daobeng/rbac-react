@@ -4,7 +4,6 @@ import Contact from './components/Contact';
 import { Context, users } from './utils';
 import { AbilityContext } from './components/Can';
 import defineRolesFor, { buildAbilityFor} from './config';
-import withRole from './withRole';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
 const NotFound = () => <h1>404 Not Found </h1>
@@ -32,12 +31,25 @@ function ToggleUser() {
   )
 }
 
-// DENYING ROUTES
-// const withITRole = withRole(['IT'])
-// const ITContactRoute = withITRole(() => <Route path='/contact' exact component={ Contact } />, NotFound)
-
 // MAIN application
 const ability = buildAbilityFor([]); // begin with empty abilities
+
+function Routes() {
+  const abilityContext = React.useContext(AbilityContext);
+
+  return (
+    <Router>
+      <Switch>
+        <Route path='/' exact component={ Home } />
+        {
+          abilityContext.can('read', 'Contact')
+          && <Route path='/contact' exact component={ Contact } />
+        }
+        <Route path='*' component={ NotFound } />
+      </Switch>
+    </Router>
+  )
+}
 
 function App() {
   const [user, setUser] = React.useState<string>('basicUser')
@@ -51,13 +63,7 @@ function App() {
     >
     <AbilityContext.Provider value={ ability }>
     <ToggleUser />
-    <Router>
-      <Switch>
-        <Route path='/' exact component={ Home } />
-        {/* <ITContactRoute /> */}
-        <Route path='*' component={ NotFound } />
-      </Switch>
-    </Router>
+    <Routes />
     </AbilityContext.Provider>
     </Context.Provider>
   );
