@@ -1,34 +1,59 @@
-import { defineAbility, AbilityBuilder, Ability, AbilityClass } from '@casl/ability';
+import { AbilityBuilder, Ability, AbilityClass } from '@casl/ability';
+import { User } from './utils';
 
-// subjects in my app and actions that can be performed on them
 type Actions = 'manage' | 'create' | 'read' | 'delete';
-type Subjects = 'MarketingView' | 'Contact' | 'Database' | 'all';
+type Subjects = 'MarketingView' | 'Contact' | 'Database' | 'Proposal' | 'all';
 
 export type AppAbility = Ability<[Actions, Subjects]>
 export const AppAbility = Ability as AbilityClass<AppAbility>
 
-export default function defineRulesFor(roles: Array<string>) {
-    const { can, rules } = new AbilityBuilder(AppAbility);
+// can be defined in a JSON or database to allow
+const roleDefs = {
+    'marketing': {
+        'MarketingView': 'read',
+        // 'Proposal': 'read',
+    },
+    'IT': {
+        'Contact': ['read', 'create'],
+        'Database': ['read', 'delete'],
+        // 'Proposal': 'manage' // read-write access to everything
+    }
+}
+
+export default function defineRulesFor(user: User) {
+    const { can, cannot, rules } = new AbilityBuilder(AppAbility);
 
     // superUser roles definition
-    if (roles.includes('superuser')) {
+    if (user.roles.includes('superuser')) {
         can('manage', 'all');
+    } else {
+        // read from role definitions and define roles
+        Object.entries(roleDefs).forEach(([role, roleDef]) => {
+            if (user.roles.includes(role)) {
+                Object.entries(roleDef).forEach(([subject, actions]) => {
+                    can(actions as Actions | Actions[], subject as Subjects);
+                })
+            }
+        })
     }
 
-    // marketing user roles definition
-    if (roles.includes('marketing')) {
-        can('read', 'MarketingView');
-    }
+    // @ts-ignore
+    can('manage', 'Proposal', {user: user.username})
 
-    // IT user roles
-    if (roles.includes('IT')) {
-        can(['read', 'create'], 'Contact');
-        can(['delete', 'read'], 'Database');
-    }
+    // // marketing user roles definition
+    // if (roles.includes('marketing')) {
+    //     can('read', 'MarketingView');
+    // }
+
+    // // IT user roles
+    // if (roles.includes('IT')) {
+    //     can(['read', 'create'], 'Contact');
+    //     can(['delete', 'read'], 'Database');
+    // }
 
     return rules;
 }
 
-export function buildAbilityFor(roles: Array<string>): AppAbility {
-    return new AppAbility(defineRulesFor(roles))
+export function buildAbilityFor(user: User): AppAbility {
+    return new AppAbility(defineRulesFor(user));
 }

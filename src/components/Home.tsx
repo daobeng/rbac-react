@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Context, users } from '../utils';
+import { subject } from '@casl/ability';
 import Can from './Can';
 
 const MarketingView = () => (
@@ -13,6 +14,13 @@ const DeleteButton = (props: any) => {
     return (
         <button className='deleteButton' onClick={ onClick }>Delete Database</button>
     )
+}
+
+// Has access to edit entity
+const proposal = {
+    name: 'My sample Proposal',
+    budget: 5000,
+    user: 'Mary',
 }
 
 const Home = () => {
@@ -29,6 +37,13 @@ const Home = () => {
 
             <Can I='delete' a='Database'>
                 <DeleteButton onClick={ () => alert('database dropped') } />
+            </Can>
+
+            {/* @ts-ignore */}
+            <Can I='read' this={ subject('Proposal', proposal) }>
+                <h1>Proposal Details</h1>
+                <p>name: { proposal.name }</p>
+                <p></p>
             </Can>
         </>
     )

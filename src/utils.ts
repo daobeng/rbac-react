@@ -7,15 +7,20 @@ interface AppContext {
 
 export const Context = React.createContext<AppContext>(undefined!);
 
+export type User = {
+    username: string,
+    roles: Array<string>,
+}
+
 // Defined roles
 // basic user with either role 'basic' or no roles assigned
-export const users = {
+export const users: Record<string, User> = {
     basicUser: {
-        username: 'John',
-        roles: [] as Array<string>,
+        username: 'Jill',
+        roles: [],
     },
     ITUser: {
-        username: 'John',
+        username: 'Mary',
         roles: ['IT'],
     },
     ITAndMarketing: {

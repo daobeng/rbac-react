@@ -16,8 +16,8 @@ function ToggleUser() {
     context.updateUser(e.target.value)
 
     // update user roles when user changes / updates
-    const roles = users[e.target.value as keyof typeof users].roles || []
-    abilityContext.update(defineRolesFor(roles))
+    const user = users[e.target.value as keyof typeof users]
+    abilityContext.update(defineRolesFor(user))
   }
 
   return (
@@ -32,7 +32,8 @@ function ToggleUser() {
 }
 
 // MAIN application
-const ability = buildAbilityFor([]); // begin with empty abilities
+// begin with empty abilities
+const ability = buildAbilityFor({username: 'default', roles: []});
 
 function Routes() {
   const abilityContext = React.useContext(AbilityContext);
