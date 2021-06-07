@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Context, users } from '../utils';
-import { subject } from '@casl/ability';
 import Can from './Can';
 
 const MarketingView = () => (
@@ -26,24 +25,18 @@ const proposal = {
 const Home = () => {
     const context = React.useContext(Context);
     const user = context.state.user as keyof typeof users;
+
     return (
         <>
-            <Can do='read' on='MarketingView'>
+            <Can action='read' subject='MarketingView'>
                 <MarketingView />
             </Can>
 
             <h1>Welcome to Home: { users[user].username }</h1>
             <Link to='/contact'>Go to Contact</Link>
 
-            <Can I='delete' a='Database'>
+            <Can action='delete' subject='Database'>
                 <DeleteButton onClick={ () => alert('database dropped') } />
-            </Can>
-
-            {/* @ts-ignore */}
-            <Can I='read' this={ subject('Proposal', proposal) }>
-                <h1>Proposal Details</h1>
-                <p>name: { proposal.name }</p>
-                <p>owner: { proposal.user }</p>
             </Can>
         </>
     )

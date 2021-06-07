@@ -1,59 +1,34 @@
-import { AbilityBuilder, Ability, AbilityClass } from '@casl/ability';
+// thoughts, too big with such limited functionality
+// native support seems to be coming for react but certainly not the greatest
+// something homegrown can likely be implemented that will simply
+// possibility to tie BE and FE
+// or perhaps we'll stick with node-casbin for mo
+
 import { User } from './utils';
-
-type Actions = 'manage' | 'create' | 'read' | 'delete';
-type Subjects = 'MarketingView' | 'Contact' | 'Database' | 'Proposal' | 'all';
-
-export type AppAbility = Ability<[Actions, Subjects]>
-export const AppAbility = Ability as AbilityClass<AppAbility>
+import { Authorizer } from 'casbin.js';
 
 // can be defined in a JSON or database to allow
-const roleDefs = {
+const permDefs = {
     'marketing': {
-        'MarketingView': 'read',
-        // 'Proposal': 'read',
+        'read': ['MarketingView', 'Proposal'],
     },
     'IT': {
-        'Contact': ['read', 'create'],
-        'Database': ['read', 'delete'],
-        // 'Proposal': 'manage' // read-write access to everything
+        'read': ['Contact', 'Database'],
+        'delete': ['Database']
     }
 }
+
+export const casbinAuthorizer = new Authorizer('manual');
 
 export default function defineRulesFor(user: User) {
-    const { can, cannot, rules } = new AbilityBuilder(AppAbility);
-
     // superUser roles definition
-    if (user.roles.includes('superuser')) {
-        can('manage', 'all');
-    } else {
-        // read from role definitions and define roles
-        Object.entries(roleDefs).forEach(([role, roleDef]) => {
-            if (user.roles.includes(role)) {
-                Object.entries(roleDef).forEach(([subject, actions]) => {
-                    can(actions as Actions | Actions[], subject as Subjects);
-                })
-            }
+    const builtPerms: Record<string, any> = {}
+    user.roles.forEach((role) => {
+        const permissions = permDefs[role as keyof typeof permDefs];
+        Object.entries(permissions).forEach(([key, value]) => {
+            builtPerms[key] = [...(builtPerms[key] || []), ...value]
         })
-    }
+    })
 
-    // @ts-ignore
-    can('manage', 'Proposal', {user: user.username})
-
-    // // marketing user roles definition
-    // if (roles.includes('marketing')) {
-    //     can('read', 'MarketingView');
-    // }
-
-    // // IT user roles
-    // if (roles.includes('IT')) {
-    //     can(['read', 'create'], 'Contact');
-    //     can(['delete', 'read'], 'Database');
-    // }
-
-    return rules;
-}
-
-export function buildAbilityFor(user: User): AppAbility {
-    return new AppAbility(defineRulesFor(user));
+    casbinAuthorizer.setPermission(builtPerms);
 }

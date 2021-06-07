@@ -1,7 +1,26 @@
-import { createContext } from 'react';
-import { createContextualCan } from '@casl/react';
-import { AppAbility } from '../config';
+import React, { ReactNode } from 'react';
+import { casbinAuthorizer } from '../config';
 
-export const AbilityContext = createContext<AppAbility>(undefined!);
+type Props = {
+    children: ReactNode,
+    action: string,
+    subject: string,
+}
 
-export default createContextualCan(AbilityContext.Consumer);
+const Can: React.FC<Props> = ({ children, action, subject }) => {
+    const [render, setRender] = React.useState(false);
+
+    React.useEffect(() => {
+        (async function() {
+            const shouldRender = await casbinAuthorizer.can(action, subject)
+            console.log(shouldRender)
+            setRender(shouldRender)
+        })()
+    }, [action, subject])
+
+    if (render) return <>{ children }</>;
+
+    return null;
+}
+
+export default Can;
