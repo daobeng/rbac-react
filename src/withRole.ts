@@ -3,6 +3,7 @@ import React from 'react';
 import { Context, users } from './utils';
 
 const withRole = (roles: Array<string>) => (Component: React.FC<any>, onDeny?: React.FC<any>) => (props: any) => {
+    // get current user roles from context (can be from token for from redux store)
     const context = React.useContext(Context);
     const user = context.state.user as keyof (typeof users);
     const userRoles = users[user].roles || [];
